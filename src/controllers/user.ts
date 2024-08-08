@@ -35,7 +35,6 @@ module.exports = (appContext: AppContextType) => {
 
 const meiliSearch = async () => {
     const movies = await axios.get('https://dummyapi.online/api/movies')
-
     const client = new MeiliSearch({
         host: 'https://ms-51a8eeca0be8-10578.lon.meilisearch.io',
         apiKey: '71b692ce2cae9be3c2bbc53bf7a58ac7435aea93',
