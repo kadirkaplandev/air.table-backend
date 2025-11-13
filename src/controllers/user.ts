@@ -1,28 +1,65 @@
 "use-strict";
 import express, { Request, Response, NextFunction } from "express";
 import { AppContextType } from "../types/configTypes";
+import meilisearchService from "../meilisearch/meilisearch"
 import * as fs from 'fs';
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 import { MeiliSearch } from 'meilisearch';
 const axios = require('axios').default;
 
-
+const router = express.Router();
 module.exports = (appContext: AppContextType) => {
-
-
-    const router = express.Router();
     router.get(
-        "/*",
+        "/user",
         async (req: any, res: Response, _next: NextFunction) => {
             try {
-                const data = await meiliSearch();
-                res.status(200).send(Object.assign({ 'title': 'Hello World!' }, { data }));
+                // const data = await meiliSearch();
+                res.status(200).send({ 'title': 'Hello World!' });
             } catch (err) {
                 _next({ success: false, message: (err as Error).message });
             }
         }
     );
-
+    router.post(
+        "/meilisearh/create",
+        async (req: any, res: Response, _next: NextFunction) => {
+            try {
+                const { index, documents } = req.body
+                //const createdIndex = await meilisearchService.addDocuments({ documents, index })
+               const respons =  await meilisearchService.start()
+                res.status(200).send(respons);
+            } catch (err) {
+                _next({ success: false, message: (err as Error).message });
+            }
+        }
+    );
+    router.post(
+        "/meilisearch/search",
+        async (req: any, res: Response, _next: NextFunction) => {
+            try {
+                const { text } = req.query
+                const createdIndex = await meilisearchService.search(text)
+                res.status(200).send(createdIndex);
+            } catch (err) {
+                _next({ success: false, message: (err as Error).message });
+            }
+        }
+    );
+    router.get(
+        "/user",
+        async (req: any, res: Response, _next: NextFunction) => {
+            try {
+                
+                const id = req.body.id;
+               // const user = await appContext.db.collection('users').findOne({ _id: id });
+               // res.status(200).send(user);
+            } catch (err) {
+                _next({ success: false, message: (err as Error).message });
+            }
+        }  
+    );
     router.use((err: any, req: Request, response: Response, next: NextFunction) => {
         if (err.success === false) {
             response.status(400).send(err);
@@ -33,27 +70,4 @@ module.exports = (appContext: AppContextType) => {
     return router;
 };
 
-const meiliSearch = async () => {
-    const movies = await axios.get('https://dummyapi.online/api/movies')
-    const client = new MeiliSearch({
-        host: 'https://ms-51a8eeca0be8-10578.lon.meilisearch.io',
-        apiKey: '71b692ce2cae9be3c2bbc53bf7a58ac7435aea93',
-    })
-    const index = client.index('movies');
-    client.deleteIndex('job')
-    const documents = [
-        { id: 1, title: 'Carol', genres: ['Romance', 'Drama'] },
-        { id: 2, title: 'Wonder Woman', genres: ['Action', 'Adventure'] },
-        { id: 3, title: 'Life of Pi', genres: ['Adventure', 'Drama'] },
-        { id: 4, title: 'Mad Max: Fury Road', genres: ['Adventure', 'Science Fiction'] },
-        { id: 5, title: 'Moana', genres: ['Fantasy', 'Action'] },
-        { id: 6, title: 'Philadelphia', genres: ['Drama'] },
 
-    ]
-    
-
-    let response = await index.addDocuments(documents)
-    console.log('meilisearch çalıştı')
-    console.log(response) // => { "uid": 0 }
-    return response
-}
