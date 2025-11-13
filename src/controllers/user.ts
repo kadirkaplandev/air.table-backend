@@ -47,6 +47,19 @@ module.exports = (appContext: AppContextType) => {
             }
         }
     );
+    router.get(
+        "/user",
+        async (req: any, res: Response, _next: NextFunction) => {
+            try {
+                
+                const id = req.body.id;
+               // const user = await appContext.db.collection('users').findOne({ _id: id });
+               // res.status(200).send(user);
+            } catch (err) {
+                _next({ success: false, message: (err as Error).message });
+            }
+        }  
+    );
     router.use((err: any, req: Request, response: Response, next: NextFunction) => {
         if (err.success === false) {
             response.status(400).send(err);
